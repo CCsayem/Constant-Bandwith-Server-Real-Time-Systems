@@ -1,0 +1,30 @@
+\documentclass[conference]{IEEEtran}
+
+\title{ Constant Bandwidth Server (CBS)}
+
+\author{
+    \IEEEauthorblockN{Abu Sayem}
+    \IEEEauthorblockA{
+        Electronic Engineering\\
+        Hochschule Hamm-Lippstadt\\
+        abu.sayem@stud.hshl.de
+    }
+}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper investigates the Constant Bandwidth Server (CBS), a resource reservation mechanism for real-time systems, focusing on its theoretical foundations, practical implementation, and comparative performance against traditional schedulers. The CBS algorithm dynamically allocates bandwidth to tasks while enforcing temporal isolation, making it suitable for mixed-criticality and overload-prone environments. We implement CBS in a real-time operating system (RTOS) environment (FreeRTOS on ARM Cortex-M4) and evaluate its effectiveness in guaranteeing deadlines under varying workloads. Our objective is to demonstrate CBS’s ability to maintain schedulability with up to 90\% utilization while reducing deadline misses by 40\% compared to Earliest Deadline First (EDF) in overload scenarios. The paper contributes a reproducible implementation framework and provides insights into CBS’s trade-offs between flexibility and overhead. Key references include foundational work by  and extensions by.
+\end{abstract}
+
+
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
+
