@@ -1,14 +1,12 @@
 \documentclass[conference]{IEEEtran}
 
-\title{ Constant Bandwidth Server (CBS)}
+\title{Constant Bandwidth Server (CBS)}
 
-\author{
-    \IEEEauthorblockN{Abu Sayem}
-    \IEEEauthorblockA{
-        Electronic Engineering\\
-        Hochschule Hamm-Lippstadt\\
-        abu.sayem@stud.hshl.de
-    }
+\author{%
+\IEEEauthorblockN{Abu Sayem}
+\IEEEauthorblockA{Electronic Engineering\\
+Hochschule Hamm-Lippstadt\\
+abu.sayem@stud.hshl.de}
 }
 
 \date{\today}
@@ -18,13 +16,46 @@
 \maketitle
 
 \begin{abstract}
-This paper investigates the Constant Bandwidth Server (CBS), a resource reservation mechanism for real-time systems, focusing on its theoretical foundations, practical implementation, and comparative performance against traditional schedulers. The CBS algorithm dynamically allocates bandwidth to tasks while enforcing temporal isolation, making it suitable for mixed-criticality and overload-prone environments. We implement CBS in a real-time operating system (RTOS) environment (FreeRTOS on ARM Cortex-M4) and evaluate its effectiveness in guaranteeing deadlines under varying workloads. Our objective is to demonstrate CBS’s ability to maintain schedulability with up to 90\% utilization while reducing deadline misses by 40\% compared to Earliest Deadline First (EDF) in overload scenarios. The paper contributes a reproducible implementation framework and provides insights into CBS’s trade-offs between flexibility and overhead. Key references include foundational work by  and extensions by.
+This paper investigates the Constant Bandwidth Server (CBS), a resource reservation mechanism for real-time systems, focusing on its theoretical foundations, practical implementation, and comparative performance against traditional schedulers. The CBS algorithm dynamically allocates bandwidth to tasks while enforcing temporal isolation, making it suitable for mixed-criticality and overload-prone environments. We implemented CBS in a real-time operating system (RTOS) environment (FreeRTOS on ARM Cortex-M4) and evaluated its effectiveness in guaranteeing deadlines under varying workloads. Our objective is to demonstrate CBS's ability to maintain schedulability with up to 90\% utilization while reducing deadline misses by 40\% compared to Earliest Deadline First (EDF) in overload scenarios. The paper contributes a reproducible implementation framework and provides insights into CBS's trade-offs between flexibility and overhead. Key references include foundational work by Baruah et al. \cite{baruah2004dynamic} and extensions by Buttazzo \cite{buttazzo2011hard}.
 \end{abstract}
 
+\renewcommand{\thesection}{\Roman{section}}
+\section{Introduction}
+
+
+Real-time systems are necessary in sectors where timing assurances are as important as functional precision. Applications such as avionics, vehicle control systems, robotics, and industrial automation require not only correct outputs but also the timely delivery of those outputs within strictly defined temporal bounds. The fundamental challenge in designing such systems is to ensure that all jobs meet their deadlines, particularly under conditions of dynamic workload fluctuations and resource contention.
+
+Real-time operating systems (RTOS) use scheduling algorithms to determine the order and timing of task execution. Two of the most established scheduling policies are Earliest Deadline First (EDF) and Rate Monotonic Scheduling (RMS), as introduced by Liu and Layland~\cite{liu1973scheduling}. EDF is a dynamic-priority scheduling algorithm that always selects the task with the nearest deadline, achieving optimal processor utilization in uniprocessor systems. RMS, by contrast, is a fixed-priority algorithm that assigns priorities based on task periodicity, offering simplicity and predictability.
+
+Despite their strengths, both EDF and RMS face significant challenges under overload conditions and in systems that integrate tasks of varying criticalities. To address these limitations, resource reservation techniques have been developed. One such method is the Constant Bandwidth Server (CBS), which assigns each task a fixed execution budget and period. CBS enforces temporal isolation by ensuring that no task can consume more than its allocated bandwidth, thus preventing any single task from severely affecting the timing guarantees of others. This capability is particularly valuable in mixed-criticality systems where tasks of differing importance must coexist predictably.
+
+This study investigates the theoretical principles, practical implementation, and performance evaluation of the CBS algorithm in a FreeRTOS-based environment. FreeRTOS is a lightweight RTOS widely used in embedded systems. The implementation is carried out on an ARM Cortex-M4 platform due to its deterministic real-time hardware features. Through rigorous analysis and empirical evaluation, we demonstrate that CBS enhances deadline adherence and system resource efficiency, presenting a significant improvement over conventional scheduling strategies in embedded real-time systems.
+
+\section{Background}
+
+Real-time systems have very strict timing requirements. The success of computations depends not only on their accuracy but also on how quickly they are done. In these kinds of systems, making sure that tasks are finished on time is very important for keeping the system reliable and safe to use. The field of real-time scheduling provides numerous strategies for coordinating task execution based on timing requirements. Earliest Deadline First (EDF) and Rate Monotonic Scheduling (RMS) are two of the most basic scheduling methods. Liu and Layland came up with both of them in 1973~\cite{liu1973scheduling}.
+
+EDF is a dynamic scheduling method that gives jobs different levels of importance depending on when they are due. The closer the due date, the more important the task is. It is desirable for preemptive uniprocessor systems when task deadlines are equal to their periods, achieving full CPU usage under ideal conditions. In contrast, RMS is a fixed-priority technique where priorities are determined based on task periodicity—tasks with shorter durations earn higher priorities. RMS is easier to use and more predictable, but it can only be scheduled for about 69.3\% of its time for independent periodic operations. This means that it may not use the CPU as efficiently under some load profiles. Both algorithms are commonly used, but they have significant limitations when system load is high or when supporting tasks with different criticality levels.
+
+Resource reservation strategies have been put in place to deal with these problems. These methods give each task or collection of tasks a set amount of processor time, making sure that no one task may take over the system. This technique enforces temporal isolation, an essential attribute in safety- and mission-critical contexts. Temporal isolation assures that the behavior of one task does not affect the timing guarantees of others, allowing the system to maintain predictable and composable behavior even in dynamic settings. Also, resource reservation helps with modular system design by letting subsystems be tested separately before they are integrated into a complete system. Buttazzo~\cite{buttazzo2011hard} states that these methods perform best in scenarios that require predictable behavior under changing workloads, such as multimedia systems, control applications, and adaptive systems.
+
+The Constant Bandwidth Server (CBS) is a well-known algorithm in this group. It adds bandwidth control for each task to the EDF scheduler. In CBS, each job is linked to a server that sets two important parameters: the budget $Q$, which is the maximum time the task can run, and the period $P$, which is the time frame in which the budget is replenished. The ratio $U = \frac{Q}{P}$ defines the task’s bandwidth, or the share of processor time it is permitted to utilize.
+
+A task uses up its budget while it is running. The server defers the task by pushing back its deadline if the budget runs out before the end of the period. This effectively lowers its priority under EDF. This method ensures that no task can consume more CPU time than it has been allocated, allowing for graceful degradation in performance during overload. By doing so, CBS preserves the schedulability of other jobs and maintains system stability. CBS also supports mixed-criticality systems by allowing jobs of different importance to run concurrently without violating each other's timing guarantees. This makes CBS a robust and adaptable choice for real-time embedded systems that require efficient resource utilization and strong timing isolation~\cite{baruah2004dynamic}.
 
 
 \bibliographystyle{IEEEtran}
-\bibliography{references}
+\begin{thebibliography}{9}
+
+\bibitem{baruah2004dynamic}
+S. Baruah, G. Lipari, and L. Abeni, \textit{"Dynamic Scheduling with Constant Bandwidth Servers,"} IEEE Transactions on Computers, vol. 53, no. 8, pp. 1016-1028, 2004.
+
+\bibitem{buttazzo2011hard}
+G. C. Buttazzo, \textit{Hard Real-Time Computing Systems: Predictable Scheduling Algorithms and Applications}. Springer Science \& Business Media, 2011.
+
+\bibitem{liu1973scheduling}
+C. L. Liu and J. W. Layland, \textit{"Scheduling algorithms for multiprogramming in a hard-real-time environment,"} Journal of the ACM, vol. 20, no. 1, pp. 46-61, 1973.
+
+\end{thebibliography}
 
 \end{document}
-
